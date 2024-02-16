@@ -44,9 +44,12 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        if ($task->user_id!== Auth::user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
+        // if ($task->user_id!== Auth::user()->id) {
+        //     return response()->json(['message' => 'Unauthorized'], 401);
+        // }
+
+        $this->authorize('view', $task);
+
         return response()->json($task);
     }
 
@@ -55,7 +58,11 @@ class TaskController extends Controller
      */
     public function update(UpdateTaskRequest $request, Task $task)
     {
-        if ($task->user_id!== Auth::user()->id) {
+        // if ($task->user_id!== Auth::user()->id) {
+        //     return response()->json(['message' => 'Unauthorized'], 401);
+        // }
+
+        if ($request->user()->cannot('update', $task)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -71,9 +78,11 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        if ($task->user_id!== Auth::user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
+        // if ($task->user_id!== Auth::user()->id) {
+        //     return response()->json(['message' => 'Unauthorized'], 401);
+        // }
+
+        $this->authorize('delete', $task);
 
         $task->delete();
 
