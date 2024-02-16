@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,9 +25,18 @@ class TaskController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request)
     {
-        //
+        $request->validated();
+
+        $task = Task::create([
+            'user_id' => Auth::user()->id,
+            'name' => $request->name,
+            'description' => $request->description,
+            'priority' => $request->priority,
+        ]);
+
+        return response()->json($task, 201);
     }
 
     /**
@@ -33,15 +44,26 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        if ($task->user_id!== Auth::user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        return response()->json($task);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Task $task)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
-        //
+        if ($task->user_id!== Auth::user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $request->validated();
+
+        $task->update($request->only('name', 'description', 'priority'));
+
+        return response()->json($task);
     }
 
     /**
@@ -49,6 +71,12 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        if ($task->user_id!== Auth::user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $task->delete();
+
+        return response()->noContent();
     }
 }
